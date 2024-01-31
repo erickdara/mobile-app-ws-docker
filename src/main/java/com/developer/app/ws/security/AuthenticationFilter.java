@@ -47,17 +47,37 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)
             throws AuthenticationException {
         try {
-
+            // Parse the user's login credentials from the request body.
             UserLoginRequestModel creds = new ObjectMapper().readValue(req.getInputStream(), UserLoginRequestModel.class);
 
+            // Create an authentication token with the parsed credentials.
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(creds.getEmail(), creds.getPassword(), new ArrayList<>()));
 
         } catch (IOException e) {
+            // Handle I/O errors by throwing a runtime exception.
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Handles successful authentication by generating a JWT (JSON Web Token) for the authenticated user.
+     * This method is called by the Spring Security framework when a user has been successfully authenticated.
+     * It creates a JWT token and sets it in the response header along with the user's unique identifier.
+     *
+     * The JWT is signed using the HS512 algorithm and a secret key derived from the application's security constants.
+     * It contains the username as the subject and includes both issued-at and expiration timestamps.
+     *
+     * Additionally, this method retrieves user details from the application's user service and adds the user's
+     * unique ID to the response header.
+     *
+     * @param req   The HttpServletRequest object that contains the request the client made to the server.
+     * @param res   The HttpServletResponse object that contains the response the server sends to the client.
+     * @param chain The FilterChain that allows the request to proceed to the next filter in the chain.
+     * @param auth  The Authentication object that contains details about the successfully authenticated user.
+     * @throws IOException      If an input or output exception occurs during the process.
+     * @throws ServletException If a servlet-specific error occurs during the process.
+     */
     @Override
     protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
