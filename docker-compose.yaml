@@ -1,5 +1,17 @@
 version: "3.8"
 services:
+  mysqldb:
+    image: "mysql:8.0"
+    restart: always
+    ports:
+      - 3306:3306
+    networks:
+      - springapimysql-net
+    environment:
+      - "MYSQL_DATABASE=photo_app"
+      - "MYSQL_USER=erick"
+      - "MYSQL_PASSWORD=Erick_1022"
+      - "MYSQL_ROOT_PASSWORD=Erick_1022"
   api_service:
     build: .
     restart: always
@@ -8,24 +20,11 @@ services:
     networks:
       - springapimysql-net
     environment:
-      - spring.datasource.url=jdbc:mysql://mysql-container:3309/photo_app
+      - "SPRING.DATASOURCE.URL=jdbc:mysql://localhost:3306/photo_app"
+#      - spring.datasource.url=jdbc:mysql://localhost:3306/photo_app
     depends_on:
       - mysqldb
-
     volumes:
       - .m2:/root/.m2
-
-  mysqldb:
-    image: "mysql:8.0"
-    restart: always
-    ports:
-      - 3309:3306
-    networks:
-      - springapimysql-net
-    environment:
-      MYSQL_DATABASE: photo_app
-      MYSQL_USER: erick
-      MYSQL_PASSWORD: Erick_1022
-      MYSQL_ROOT_PASSWORD: Erick_1022
 networks:
   springapimysql-net:
