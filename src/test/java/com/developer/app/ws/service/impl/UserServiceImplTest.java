@@ -14,6 +14,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -56,44 +60,6 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getUser() {
-
-        when(userRepository.findByEmail(anyString())).thenReturn(userEntity);
-
-        UserDto userDto = userService.getUser("test@test.com");
-
-        assertNotNull(userDto);
-        assertEquals("Erick", userDto.getFirstName());
-    }
-
-    @Test
-    final void getUser_UsernameNotFoundException(){
-        when(userRepository.findByEmail(anyString())).thenReturn(null);
-
-        assertThrows(UsernameNotFoundException.class,
-                () -> {
-                    userService.getUser("test@test.com");
-                });
-    }
-
-    @Test
-    final void createUser_ServiceException(){
-        when(userRepository.findByEmail(anyString())).thenReturn(userEntity);
-        UserDto userDto = new UserDto();
-        userDto.setAddresses(getAddressDto());
-        userDto.setFirstName("Erick");
-        userDto.setLastName("Rangel");
-        userDto.setPassword("123456789");
-        userDto.setEmail("test@test.com");
-
-        assertThrows(UserServiceException.class,
-                () -> {
-                    userService.createUser(userDto);
-                });
-    }
-
-
-    @Test
     void createUser() {
         when(userRepository.findByEmail(anyString())).thenReturn(null);
         when(utils.generateUserId(anyInt())).thenReturn(userId);
@@ -118,6 +84,167 @@ class UserServiceImplTest {
         verify(bCryptPasswordEncoder, times(1)).encode("123456789");
         verify(userRepository, times(1)).save(any(UserEntity.class));
     }
+
+    @Test
+    final void createUser_ServiceException(){
+        when(userRepository.findByEmail(anyString())).thenReturn(userEntity);
+        UserDto userDto = new UserDto();
+        userDto.setAddresses(getAddressDto());
+        userDto.setFirstName("Erick");
+        userDto.setLastName("Rangel");
+        userDto.setPassword("123456789");
+        userDto.setEmail("test@test.com");
+
+        assertThrows(UserServiceException.class,
+                () -> {
+                    userService.createUser(userDto);
+                });
+    }
+
+    @Test
+    void loadUserByName(){
+        String email ="erick@test.com";
+        when(userRepository.findByEmail(anyString())).thenReturn(userEntity);
+
+        UserDetails userDetails = userService.loadUserByUsername(email);
+
+        assertEquals(email, userDetails.getUsername());
+        assertEquals(encryptedPassword, userDetails.getPassword());
+
+    }
+
+    @Test
+    void loadUserByName_NotFoundException(){
+        String email ="nonexistent@test.com";
+
+        when(userRepository.findByEmail(email)).thenReturn(null);
+
+        // Execute & Verify
+        assertThrows(UsernameNotFoundException.class, () -> {
+            userService.loadUserByUsername(email);
+        });
+    }
+
+    @Test
+    void getUser() {
+
+        when(userRepository.findByEmail(anyString())).thenReturn(userEntity);
+
+        UserDto userDto = userService.getUser("test@test.com");
+
+        assertNotNull(userDto);
+        assertEquals("Erick", userDto.getFirstName());
+    }
+
+    @Test
+    final void getUser_UsernameNotFoundException(){
+        when(userRepository.findByEmail(anyString())).thenReturn(null);
+
+        assertThrows(UsernameNotFoundException.class,
+                () -> {
+                    userService.getUser("test@test.com");
+                });
+    }
+
+    @Test
+    void getUserByUserId(){
+        when(userRepository.findByUserId(anyString())).thenReturn(userEntity);
+
+        UserDto userDto = userService.getUserByUserId(userId);
+
+        assertEquals(userId,userDto.getUserId());
+
+    }
+
+    @Test
+    void getUserByUserId_UsernameNotFoundException(){
+        when(userRepository.findByUserId(anyString())).thenReturn(null);
+
+        assertThrows(UsernameNotFoundException.class,
+                () -> {
+                    userService.getUser("test@test.com");
+                });
+    }
+
+    @Test
+    void updateUser(){
+        //Setup
+        String userId = "uniqueUserId";
+        UserDto userToUpdate = new UserDto();
+        userToUpdate.setFirstName("New FirstName");
+        userToUpdate.setLastName("New LastName");
+
+        UserEntity storedUserEntity = new UserEntity();
+        storedUserEntity.setUserId(userId);
+        storedUserEntity.setFirstName("Old FirstName");
+        storedUserEntity.setLastName("Old LastName");
+
+        when(userRepository.findByUserId(anyString())).thenReturn(storedUserEntity);
+        when(userRepository.save(any(UserEntity.class))).thenAnswer( i -> i.getArguments()[0] );
+
+        UserDto updatedUser = userService.updateUser(userId, userToUpdate);
+
+        assertEquals(userToUpdate.getFirstName(), updatedUser.getFirstName());
+        assertEquals(userToUpdate.getLastName(), updatedUser.getLastName());
+        verify(userRepository, times(1)).findByUserId(userId);
+        verify(userRepository, times(1)).save(any(UserEntity.class));
+
+    }
+
+    @Test
+    void updateUser_UserNotFound(){
+        String userId = "nonExistentUserId";
+        UserDto user = new UserDto();
+        when(userRepository.findByUserId(userId)).thenReturn(null);
+
+        assertThrows(UserServiceException.class, ()-> userService.updateUser(userId, user));
+    }
+
+    @Test
+    void deleteUser(){
+        String userId = "someUserId";
+
+        when(userRepository.findByUserId(userId)).thenReturn(userEntity);
+
+        userService.deleteUser(userId);
+
+        verify(userRepository, times(1)).delete(userEntity);
+
+
+    }
+
+    @Test
+    void deleteUser_UserServiceException(){
+        String userId = "nonExistentUserId";
+        UserDto user = new UserDto();
+        when(userRepository.findByUserId(userId)).thenReturn(null);
+
+        assertThrows(UserServiceException.class, ()-> userService.deleteUser(userId));
+    }
+
+    @Test
+    void getUsers(){
+
+        int page=1;
+        int limit=2;
+
+        List<UserEntity> userList = new ArrayList<>();
+        userList.add(new UserEntity());
+        userList.add(new UserEntity());
+        Page<UserEntity> userPage = new PageImpl<>(userList);
+
+        when(userRepository.findAll(PageRequest.of(0, limit))).thenReturn(userPage);
+
+        // Execute
+        List<UserDto> result = userService.getUsers(page, limit);
+
+        // Verify
+        assertEquals(limit, result.size());
+        verify(userRepository, times(1)).findAll(any(PageRequest.class));
+    }
+
+
+
 
     private List<AddressDTO> getAddressDto(){
         AddressDTO addressDTO = new AddressDTO();

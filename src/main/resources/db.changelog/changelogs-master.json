@@ -3,17 +3,16 @@
     {
       "changeSet": {
         "id": "1",
-        "author": "erick",
+        "author": "Erick Rangel",
         "changes": [
           {
             "createTable": {
-              "tableName": "user",
+              "tableName": "users",
               "columns": [
                 {
                   "column": {
                     "name": "id",
-                    "type": "int",
-                    "autoIncrement": true,
+                    "type": "BIGINT(19)",
                     "constraints": {
                       "primaryKey": true,
                       "nullable": false
@@ -22,14 +21,20 @@
                 },
                 {
                   "column": {
-                    "name": "firstname",
-                    "type": "varchar(50)"
+                    "name": "email",
+                    "type": "VARCHAR(120)",
+                    "constraints": {
+                      "nullable": false,
+                      "uniqueConstraint": {
+                        "name": "UK_6dotkott2kjsp8vw4d0m25fb7"
+                      }
+                    }
                   }
                 },
                 {
                   "column": {
-                    "name": "lastname",
-                    "type": "varchar(50)",
+                    "name": "email_verification_status",
+                    "type": "BIT(1)",
                     "constraints": {
                       "nullable": false
                     }
@@ -37,8 +42,180 @@
                 },
                 {
                   "column": {
-                    "name": "email",
-                    "type": "varchar(50)"
+                    "name": "email_verification_token",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "encrypted_password",
+                    "type": "VARCHAR(255)",
+                    "constraints": {
+                      "nullable": false
+                    }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "first_name",
+                    "type": "VARCHAR(50)",
+                    "constraints": {
+                      "nullable": false
+                    }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "last_name",
+                    "type": "VARCHAR(50)",
+                    "constraints": {
+                      "nullable": false
+                    }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "user_id",
+                    "type": "VARCHAR(255)",
+                    "constraints": {
+                      "nullable": false
+                    }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "addresses",
+                    "type": "VARBINARY(255)"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "2",
+        "author": "author",
+        "changes": [
+          {
+            "createTable": {
+              "tableName": "addresses",
+              "columns": [
+                {
+                  "column": {
+                    "name": "id",
+                    "type": "BIGINT(19)",
+                    "constraints": {
+                      "primaryKey": true,
+                      "nullable": false
+                    }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "city",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "country",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "postal_code",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "street_name",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "type",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "user_details",
+                    "type": "VARBINARY(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "address_id",
+                    "type": "VARCHAR(255)"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "users_id",
+                    "type": "BIGINT(19)",
+                    "constraints": {
+                      "foreignKeyConstraint": {
+                        "name": "FKr9ce5hb61hmpvm107ccip0irl",
+                        "references": "users",
+                        "referencedColumnNames": "id",
+                        "onUpdate": "NO ACTION",
+                        "onDelete": "NO ACTION"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "3",
+        "author": "author",
+        "changes": [
+          {
+            "createTable": {
+              "tableName": "users_addresses",
+              "columns": [
+                {
+                  "column": {
+                    "name": "users_id",
+                    "type": "BIGINT(19)",
+                    "constraints": {
+                      "foreignKeyConstraint": {
+                        "name": "FKqmitmtu33rjv24itwynru6429",
+                        "references": "users",
+                        "referencedColumnNames": "id",
+                        "onUpdate": "NO ACTION",
+                        "onDelete": "NO ACTION"
+                      }
+                    }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "addresses_id",
+                    "type": "BIGINT(19)",
+                    "constraints": {
+                      "foreignKeyConstraint": {
+                        "name": "FKh6foo81uvii75tg3vibdj1mcx",
+                        "references": "addresses",
+                        "referencedColumnNames": "id",
+                        "onUpdate": "NO ACTION",
+                        "onDelete": "NO ACTION",
+                        "uniqueConstraint": {
+                          "name": "UK_fkg2t84ux3d2l2pg8atpsbljx"
+                        }
+                      }
+                    }
                   }
                 }
               ]
