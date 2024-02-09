@@ -34,14 +34,14 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     /**
      * Attempts to authenticate a user based on the provided HTTP request.
-     * This method overrides the standard Spring Security authentication method 
+     * This method overrides the standard Spring Security authentication method
      * to process the user's login credentials from the request.
      *
      * @param req The HTTP request containing the user's login credentials.
      * @param res The HTTP response. In this method implementation, it is not directly used.
      * @return An {@link Authentication} object representing the authenticated user.
      * @throws AuthenticationException If authentication fails due to invalid credentials or other authentication issues.
-     * @throws RuntimeException If there is an I/O error while processing the request (e.g., malformed JSON in request body).
+     * @throws RuntimeException        If there is an I/O error while processing the request (e.g., malformed JSON in request body).
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)
@@ -64,10 +64,10 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
      * Handles successful authentication by generating a JWT (JSON Web Token) for the authenticated user.
      * This method is called by the Spring Security framework when a user has been successfully authenticated.
      * It creates a JWT token and sets it in the response header along with the user's unique identifier.
-     *
+     * <p>
      * The JWT is signed using the HS512 algorithm and a secret key derived from the application's security constants.
      * It contains the username as the subject and includes both issued-at and expiration timestamps.
-     *
+     * <p>
      * Additionally, this method retrieves user details from the application's user service and adds the user's
      * unique ID to the response header.
      *

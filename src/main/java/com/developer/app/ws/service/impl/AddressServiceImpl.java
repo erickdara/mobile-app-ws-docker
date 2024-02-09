@@ -29,10 +29,10 @@ public class AddressServiceImpl implements AddressesService {
         ModelMapper modelMapper = new ModelMapper();
 
         UserEntity userEntity = userRepository.findByUserId(userId);
-        if(userEntity==null) return returnValue;
+        if (userEntity == null) return returnValue;
 
         Iterable<AddressEntity> addresses = addressRepository.findAllByUserDetails(userEntity);
-        for(AddressEntity addressEntity:addresses){
+        for (AddressEntity addressEntity : addresses) {
             returnValue.add(modelMapper.map(addressEntity, AddressDTO.class));
         }
 
@@ -45,8 +45,8 @@ public class AddressServiceImpl implements AddressesService {
 
         AddressEntity addressEntity = addressRepository.findByAddressId(addressId);
 
-        if(addressEntity != null){
-            returnValue = new ModelMapper().map(addressEntity,AddressDTO.class);
+        if (addressEntity != null) {
+            returnValue = new ModelMapper().map(addressEntity, AddressDTO.class);
         }
         return returnValue;
     }

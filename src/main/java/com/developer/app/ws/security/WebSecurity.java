@@ -42,7 +42,7 @@ public class WebSecurity {
 
         http.csrf((csrf) -> csrf.disable())
                 .authorizeHttpRequests((authz) -> authz
-                        .requestMatchers("/swagger-ui/**","/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
                         .permitAll()
                         .anyRequest().authenticated())

@@ -41,11 +41,11 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findByEmail(user.getEmail()) != null)
             throw new UserServiceException("Record already exists");
 
-        for (int i=0; i<user.getAddresses().size(); i++){
+        for (int i = 0; i < user.getAddresses().size(); i++) {
             AddressDTO address = user.getAddresses().get(i);
             address.setUserDetails(user);
             address.setAddressId(utils.generateAddressId(30));
-            user.getAddresses().set(i,address);
+            user.getAddresses().set(i, address);
         }
 
         //BeanUtils.copyProperties(user, userEntity);
@@ -121,7 +121,7 @@ public class UserServiceImpl implements UserService {
         if (userEntity == null)
             throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
 
-       userRepository.delete(userEntity);
+        userRepository.delete(userEntity);
     }
 
     @Override
@@ -129,14 +129,14 @@ public class UserServiceImpl implements UserService {
 
         List<UserDto> returnValue = new ArrayList<>();
 
-        if(page>0) page -=1;
+        if (page > 0) page -= 1;
 
-        Pageable pageableRequest = PageRequest.of(page,limit);
+        Pageable pageableRequest = PageRequest.of(page, limit);
 
         Page<UserEntity> usersPage = userRepository.findAll(pageableRequest);
         List<UserEntity> users = usersPage.getContent();
 
-        for(UserEntity userEntity : users){
+        for (UserEntity userEntity : users) {
             UserDto userDto = new UserDto();
             BeanUtils.copyProperties(userEntity, userDto);
             returnValue.add(userDto);

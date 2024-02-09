@@ -86,7 +86,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    final void createUser_ServiceException(){
+    final void createUser_ServiceException() {
         when(userRepository.findByEmail(anyString())).thenReturn(userEntity);
         UserDto userDto = new UserDto();
         userDto.setAddresses(getAddressDto());
@@ -102,8 +102,8 @@ class UserServiceImplTest {
     }
 
     @Test
-    void loadUserByName(){
-        String email ="erick@test.com";
+    void loadUserByName() {
+        String email = "erick@test.com";
         when(userRepository.findByEmail(anyString())).thenReturn(userEntity);
 
         UserDetails userDetails = userService.loadUserByUsername(email);
@@ -114,8 +114,8 @@ class UserServiceImplTest {
     }
 
     @Test
-    void loadUserByName_NotFoundException(){
-        String email ="nonexistent@test.com";
+    void loadUserByName_NotFoundException() {
+        String email = "nonexistent@test.com";
 
         when(userRepository.findByEmail(email)).thenReturn(null);
 
@@ -137,7 +137,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    final void getUser_UsernameNotFoundException(){
+    final void getUser_UsernameNotFoundException() {
         when(userRepository.findByEmail(anyString())).thenReturn(null);
 
         assertThrows(UsernameNotFoundException.class,
@@ -147,17 +147,17 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getUserByUserId(){
+    void getUserByUserId() {
         when(userRepository.findByUserId(anyString())).thenReturn(userEntity);
 
         UserDto userDto = userService.getUserByUserId(userId);
 
-        assertEquals(userId,userDto.getUserId());
+        assertEquals(userId, userDto.getUserId());
 
     }
 
     @Test
-    void getUserByUserId_UsernameNotFoundException(){
+    void getUserByUserId_UsernameNotFoundException() {
         when(userRepository.findByUserId(anyString())).thenReturn(null);
 
         assertThrows(UsernameNotFoundException.class,
@@ -167,7 +167,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateUser(){
+    void updateUser() {
         //Setup
         String userId = "uniqueUserId";
         UserDto userToUpdate = new UserDto();
@@ -180,7 +180,7 @@ class UserServiceImplTest {
         storedUserEntity.setLastName("Old LastName");
 
         when(userRepository.findByUserId(anyString())).thenReturn(storedUserEntity);
-        when(userRepository.save(any(UserEntity.class))).thenAnswer( i -> i.getArguments()[0] );
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(i -> i.getArguments()[0]);
 
         UserDto updatedUser = userService.updateUser(userId, userToUpdate);
 
@@ -192,16 +192,16 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateUser_UserNotFound(){
+    void updateUser_UserNotFound() {
         String userId = "nonExistentUserId";
         UserDto user = new UserDto();
         when(userRepository.findByUserId(userId)).thenReturn(null);
 
-        assertThrows(UserServiceException.class, ()-> userService.updateUser(userId, user));
+        assertThrows(UserServiceException.class, () -> userService.updateUser(userId, user));
     }
 
     @Test
-    void deleteUser(){
+    void deleteUser() {
         String userId = "someUserId";
 
         when(userRepository.findByUserId(userId)).thenReturn(userEntity);
@@ -214,26 +214,27 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteUser_UserServiceException(){
+    void deleteUser_UserServiceException() {
         String userId = "nonExistentUserId";
         UserDto user = new UserDto();
         when(userRepository.findByUserId(userId)).thenReturn(null);
 
-        assertThrows(UserServiceException.class, ()-> userService.deleteUser(userId));
+        assertThrows(UserServiceException.class, () -> userService.deleteUser(userId));
     }
 
     @Test
-    void getUsers(){
+    void getUsers() {
 
-        int page=1;
-        int limit=2;
+        int page = 1;
+        int limit = 2;
 
         List<UserEntity> userList = new ArrayList<>();
         userList.add(new UserEntity());
         userList.add(new UserEntity());
         Page<UserEntity> userPage = new PageImpl<>(userList);
 
-        when(userRepository.findAll(PageRequest.of(0, limit))).thenReturn(userPage);
+        when(userRepository.findAll(PageRequest.of(
+                0, limit))).thenReturn(userPage);
 
         // Execute
         List<UserDto> result = userService.getUsers(page, limit);
@@ -243,10 +244,7 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).findAll(any(PageRequest.class));
     }
 
-
-
-
-    private List<AddressDTO> getAddressDto(){
+    private List<AddressDTO> getAddressDto() {
         AddressDTO addressDTO = new AddressDTO();
         addressDTO.setType("shipping");
         addressDTO.setCity("Bogota");
@@ -267,11 +265,11 @@ class UserServiceImplTest {
         return addresses;
     }
 
-    private List<AddressEntity> getAddressesEntity()
-    {
+    private List<AddressEntity> getAddressesEntity() {
         List<AddressDTO> addresses = getAddressDto();
 
-        Type listType = new TypeToken<List<AddressEntity>>(){}.getType();
+        Type listType = new TypeToken<List<AddressEntity>>() {
+        }.getType();
         return new ModelMapper().map(addresses, listType);
     }
 

@@ -36,12 +36,13 @@ public class UserController {
     AddressesService addressesService;
 
     @GetMapping(path = "/{id}")
-    public UserRest getUser(@PathVariable String id, @RequestBody UserDetailsRequestModel userDetails) {
+    public UserRest getUser(@PathVariable String id) {
 
+        ModelMapper modelMapper = new ModelMapper();
         UserRest returnValue = new UserRest();
 
         UserDto userDto = userService.getUserByUserId(id);
-        BeanUtils.copyProperties(userDto, returnValue);
+        returnValue = modelMapper.map(userDto, UserRest.class);
 
         return returnValue;
     }
@@ -73,16 +74,17 @@ public class UserController {
 
         if (userDetails.getFirstName().isEmpty()) throw new NullPointerException("The object is null");
 
+        ModelMapper modelMapper = new ModelMapper();
         UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(userDetails, userDto);
+        modelMapper.map(userDetails, userDto);
 
         UserDto createdUser = userService.updateUser(id, userDto);
-        BeanUtils.copyProperties(createdUser, returnValue);
+        modelMapper.map(createdUser, returnValue);
 
         return returnValue;
     }
 
-    @DeleteMapping(path= "/{id}",
+    @DeleteMapping(path = "/{id}",
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public OperationStatusModel deleteUser(@PathVariable String id) {
         OperationStatusModel returnValue = new OperationStatusModel();
@@ -96,14 +98,14 @@ public class UserController {
 
     @Operation(summary = "Get List User")
     @GetMapping(produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public List<UserRest> getUsers(@RequestParam(value="page", defaultValue = "0") int page,
-                                   @RequestParam(value="limit", defaultValue = "2") int limit) {
+    public List<UserRest> getUsers(@RequestParam(value = "page", defaultValue = "0") int page,
+                                   @RequestParam(value = "limit", defaultValue = "2") int limit) {
 
         List<UserRest> returnValue = new ArrayList<>();
 
-        List<UserDto> users = userService.getUsers(page,limit);
+        List<UserDto> users = userService.getUsers(page, limit);
 
-        for(UserDto userDto : users){
+        for (UserDto userDto : users) {
             UserRest userModel = new UserRest();
             BeanUtils.copyProperties(userDto, userModel);
             returnValue.add(userModel);
@@ -120,7 +122,7 @@ public class UserController {
 
         List<AddressDTO> addressesDto = addressesService.getAddresses(id);
 
-        if(addressesDto != null && !addressesDto.isEmpty()) {
+        if (addressesDto != null && !addressesDto.isEmpty()) {
             Type listType = new TypeToken<List<AddressesRest>>() {
             }.getType();
             returnValue = new ModelMapper().map(addressesDto, listType);
@@ -146,7 +148,7 @@ public class UserController {
                 .withRel("addresses");
         // http://localhost:8080/users/<userId>/{addressId}
         Link selfLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UserController.class)
-                .getUserAddress(userId,addressId))
+                        .getUserAddress(userId, addressId))
                 .withSelfRel();
 
 //                .slash(userId)
@@ -157,6 +159,6 @@ public class UserController {
 //        returnValue.add(userAddressesLink);
 //        returnValue.add(selfLink);
 
-        return EntityModel.of(returnValue, Arrays.asList(userLink,userAddressesLink,selfLink));
+        return EntityModel.of(returnValue, Arrays.asList(userLink, userAddressesLink, selfLink));
     }
 }
