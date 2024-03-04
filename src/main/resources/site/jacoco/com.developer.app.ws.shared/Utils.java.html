@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Utils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.mobile-app-ws</a> &gt; <a href="index.source.html" class="el_package">com.developer.app.ws.shared</a> &gt; <span class="el_source">Utils.java</span></div><h1>Utils.java</h1><pre class="source lang-java linenums">package com.developer.app.ws.shared;
+
+import org.springframework.stereotype.Component;
+
+import java.security.SecureRandom;
+import java.util.Random;
+
+@Component
+<span class="fc" id="L9">public class Utils {</span>
+
+<span class="fc" id="L11">    private final Random RANDOM = new SecureRandom();</span>
+<span class="fc" id="L12">    private final String ALPHABET = &quot;0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&quot;;</span>
+<span class="fc" id="L13">    private final int ITERATIONS = 10000;</span>
+<span class="fc" id="L14">    private final int KEY_LENGTH = 256;</span>
+
+    public String generateUserId(int length) {
+<span class="fc" id="L17">        return generateRandomString(length);</span>
+    }
+
+    public String generateAddressId(int length) {
+<span class="fc" id="L21">        return generateRandomString(length);</span>
+    }
+
+    private String generateRandomString(int length) {
+<span class="fc" id="L25">        StringBuilder returnValue = new StringBuilder(length);</span>
+
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        for (int i = 0; i &lt; length; i++) {</span>
+<span class="fc" id="L28">            returnValue.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));</span>
+        }
+
+<span class="fc" id="L31">        return new String(returnValue);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

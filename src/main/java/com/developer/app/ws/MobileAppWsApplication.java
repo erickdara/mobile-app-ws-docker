@@ -21,6 +21,4 @@ public class MobileAppWsApplication {
     public SpringApplicationContext springApplicationContext() {
         return new SpringApplicationContext();
     }
-
-
 }

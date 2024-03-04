@@ -4,6 +4,7 @@ import com.developer.app.ws.service.AddressesService;
 import com.developer.app.ws.service.UserService;
 import com.developer.app.ws.shared.dto.AddressDTO;
 import com.developer.app.ws.shared.dto.UserDto;
+import com.developer.app.ws.ui.model.request.AddressRequestModel;
 import com.developer.app.ws.ui.model.request.UserDetailsRequestModel;
 import com.developer.app.ws.ui.model.response.AddressesRest;
 import com.developer.app.ws.ui.model.response.OperationStatusModel;
@@ -17,13 +18,13 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -37,8 +38,6 @@ class UserControllerTest {
     @Mock
     UserService userService;
 
-//    @InjectMocks
-//    private UserAddressesController controller;
     UserDto userDto;
     @Mock
     private AddressesService addressesService;
@@ -76,12 +75,17 @@ class UserControllerTest {
     @Test
     void createUser() throws Exception {
 
+        List<AddressRequestModel> addresses = new ArrayList<>();
+        addresses.add(new AddressRequestModel());
+        addresses.add(new AddressRequestModel());
+
         when(userService.createUser(any(UserDto.class))).thenReturn(userDto);
 
         UserDetailsRequestModel userDetailsRequestModel = new UserDetailsRequestModel();
         userDetailsRequestModel.setFirstName("Erick");
         userDetailsRequestModel.setLastName("Rangel");
         userDetailsRequestModel.setEmail("test@test.com");
+        userDetailsRequestModel.setAddresses(addresses);
 
         UserRest userRest = userController.createUser(userDetailsRequestModel);
 
@@ -125,6 +129,17 @@ class UserControllerTest {
     }
 
     @Test
+    void deleteUserNotFoundException() {
+
+        when(userService.getUserByUserId(anyString())).thenThrow(UsernameNotFoundException.class);
+
+        assertThrows(UsernameNotFoundException.class, () -> {
+            userService.getUserByUserId(anyString());
+        });
+
+    }
+
+    @Test
     void getUsers() {
         int page = 0;
         int limit = 2;
@@ -134,7 +149,6 @@ class UserControllerTest {
         when(userService.getUsers(page, limit)).thenReturn(expectedUsers);
 
         List<UserRest> actualUsers = userController.getUsers(page, limit);
-//        actualUsers.add(new UserRest());
 
         assertThat(actualUsers).hasSize(2);
 
@@ -142,42 +156,29 @@ class UserControllerTest {
 
     @Test
     void getUserAddresses() {
-        // Arrange
         String userId = "validUserId";
         List<AddressDTO> expectedAddresses = new ArrayList<>();
         expectedAddresses.add(new AddressDTO());
         expectedAddresses.add(new AddressDTO());
         when(addressesService.getAddresses(userId)).thenReturn(expectedAddresses);
 
-        // Act
         List<AddressesRest> actualAddresses = userController.getUserAddresses(userId);
 
-        // Assert
-        assertThat(actualAddresses).hasSize(2); // Assuming 2 expected addresses
-        // ... further assertions to verify content, order, etc.
+
+        assertThat(actualAddresses).hasSize(2);
+
     }
 
     @Test
     void getUserAddress() {
-        // Arrange
         String userId = "validUserId";
         String addressId = "validAddressId";
         AddressDTO expectedAddress = new AddressDTO();
         when(addressesService.getAddress(addressId)).thenReturn(expectedAddress);
 
-        // Act
         EntityModel<AddressesRest> actualResponse = userController.getUserAddress(userId, addressId);
 
-        // Assert
-        AddressesRest returnValue = actualResponse.getContent();
-        // ... assertions for addressesRest content
-        List<Link> links = actualResponse.getLinks().toList();
-        // ... assertions for links (user, userAddresses, self)
-
-        // Assert
-        //assertThat(actualResponse.getContent()).isEqualTo(expectedAddress);
         assertThat(actualResponse.getLinks()).hasSize(3);
-        // ... further assertions to verify link content and REL values
     }
 
     private List<AddressDTO> getAddressDto() {

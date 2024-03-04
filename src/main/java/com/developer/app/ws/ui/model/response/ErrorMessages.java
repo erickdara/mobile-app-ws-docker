@@ -1,5 +1,8 @@
 package com.developer.app.ws.ui.model.response;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorMessages {
 
     MISSING_REQUIRED_FIELD("Missing required field. Please check documentation for required fields"),
@@ -11,17 +14,15 @@ public enum ErrorMessages {
     COULD_NOT_DELETE_RECORD("Could not delete record"),
     EMAIL_ADDRESS_NOT_VERIFIED("Email address could not be verified");
 
+    /**
+     * -- GETTER --
+     *
+     * @return the errorMessage
+     */
     private String errorMessage;
 
     ErrorMessages(String errorMessage) {
         this.errorMessage = errorMessage;
-    }
-
-    /**
-     * @return the errorMessage
-     */
-    public String getErrorMessage() {
-        return errorMessage;
     }
 
     /**

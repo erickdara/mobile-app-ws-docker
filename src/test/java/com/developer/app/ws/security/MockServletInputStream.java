@@ -4,7 +4,6 @@ import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
 class MockServletInputStream extends ServletInputStream {
     private final ByteArrayInputStream byteArrayInputStream;
@@ -29,7 +28,7 @@ class MockServletInputStream extends ServletInputStream {
     }
 
     @Override
-    public int read() throws IOException {
+    public int read() {
         return byteArrayInputStream.read();
     }
 }

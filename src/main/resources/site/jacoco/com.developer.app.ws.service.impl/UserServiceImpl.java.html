@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.mobile-app-ws</a> &gt; <a href="index.source.html" class="el_package">com.developer.app.ws.service.impl</a> &gt; <span class="el_source">UserServiceImpl.java</span></div><h1>UserServiceImpl.java</h1><pre class="source lang-java linenums">package com.developer.app.ws.service.impl;
+
+import com.developer.app.ws.exceptions.UserServiceException;
+import com.developer.app.ws.io.entity.UserEntity;
+import com.developer.app.ws.repository.UserRepository;
+import com.developer.app.ws.service.UserService;
+import com.developer.app.ws.shared.Utils;
+import com.developer.app.ws.shared.dto.AddressDTO;
+import com.developer.app.ws.shared.dto.UserDto;
+import com.developer.app.ws.ui.model.response.ErrorMessages;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+<span class="fc" id="L27">public class UserServiceImpl implements UserService {</span>
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    Utils utils;
+
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Override
+    public UserDto createUser(UserDto user) {
+
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (userRepository.findByEmail(user.getEmail()) != null)</span>
+<span class="fc" id="L42">            throw new UserServiceException(&quot;Record already exists&quot;);</span>
+
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        for (int i = 0; i &lt; user.getAddresses().size(); i++) {</span>
+<span class="fc" id="L45">            AddressDTO address = user.getAddresses().get(i);</span>
+<span class="fc" id="L46">            address.setUserDetails(user);</span>
+<span class="fc" id="L47">            address.setAddressId(utils.generateAddressId(30));</span>
+<span class="fc" id="L48">            user.getAddresses().set(i, address);</span>
+        }
+
+
+<span class="fc" id="L52">        ModelMapper modelMapper = new ModelMapper();</span>
+<span class="fc" id="L53">        UserEntity userEntity = modelMapper.map(user, UserEntity.class);</span>
+
+<span class="fc" id="L55">        String publicUserId = utils.generateUserId(30);</span>
+<span class="fc" id="L56">        userEntity.setUserId(publicUserId);</span>
+<span class="fc" id="L57">        userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));</span>
+
+<span class="fc" id="L59">        UserEntity storedUserDetails = userRepository.save(userEntity);</span>
+
+<span class="fc" id="L61">        return modelMapper.map(storedUserDetails, UserDto.class);</span>
+    }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+<span class="fc" id="L67">        UserEntity userEntity = userRepository.findByEmail(username);</span>
+
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (userEntity == null) throw new UsernameNotFoundException(username);</span>
+
+<span class="fc" id="L71">        return new User(username, userEntity.getEncryptedPassword(), new ArrayList&lt;&gt;());</span>
+    }
+
+    @Override
+    public UserDto getUser(String email) {
+<span class="fc" id="L76">        UserEntity userEntity = userRepository.findByEmail(email);</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (userEntity == null) throw new UsernameNotFoundException(email);</span>
+
+<span class="fc" id="L79">        UserDto returnValue = new UserDto();</span>
+<span class="fc" id="L80">        BeanUtils.copyProperties(userEntity, returnValue);</span>
+
+<span class="fc" id="L82">        return returnValue;</span>
+    }
+
+    @Override
+    public UserDto getUserByUserId(String userId) {
+<span class="fc" id="L87">        UserDto returnValue = new UserDto();</span>
+<span class="fc" id="L88">        UserEntity userEntity = userRepository.findByUserId(userId);</span>
+
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (userEntity == null) throw new UsernameNotFoundException(&quot;User with ID: &quot; + userId + &quot; not found&quot;);</span>
+
+<span class="fc" id="L92">        BeanUtils.copyProperties(userEntity, returnValue);</span>
+<span class="fc" id="L93">        return returnValue;</span>
+    }
+
+    @Override
+    public UserDto updateUser(String userId, UserDto user) {
+<span class="fc" id="L98">        UserDto returnValue = new UserDto();</span>
+<span class="fc" id="L99">        UserEntity userEntity = userRepository.findByUserId(userId);</span>
+
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (userEntity == null)</span>
+<span class="fc" id="L102">            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());</span>
+
+<span class="fc" id="L104">        userEntity.setFirstName(user.getFirstName());</span>
+<span class="fc" id="L105">        userEntity.setLastName(user.getLastName());</span>
+
+<span class="fc" id="L107">        UserEntity updateUserDetails = userRepository.save(userEntity);</span>
+
+<span class="fc" id="L109">        BeanUtils.copyProperties(updateUserDetails, returnValue);</span>
+
+<span class="fc" id="L111">        return returnValue;</span>
+    }
+
+    @Override
+    public void deleteUser(String userId) {
+<span class="fc" id="L116">        UserEntity userEntity = userRepository.findByUserId(userId);</span>
+
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        if (userEntity == null)</span>
+<span class="nc" id="L119">            throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());</span>
+
+<span class="fc" id="L121">        userRepository.delete(userEntity);</span>
+<span class="fc" id="L122">    }</span>
+
+    @Override
+    public List&lt;UserDto&gt; getUsers(int page, int limit) {
+
+<span class="fc" id="L127">        List&lt;UserDto&gt; returnValue = new ArrayList&lt;&gt;();</span>
+
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        if (page &gt; 0) page -= 1;</span>
+
+<span class="fc" id="L131">        Pageable pageableRequest = PageRequest.of(page, limit);</span>
+
+<span class="fc" id="L133">        Page&lt;UserEntity&gt; usersPage = userRepository.findAll(pageableRequest);</span>
+<span class="fc" id="L134">        List&lt;UserEntity&gt; users = usersPage.getContent();</span>
+
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        for (UserEntity userEntity : users) {</span>
+<span class="fc" id="L137">            UserDto userDto = new UserDto();</span>
+<span class="fc" id="L138">            BeanUtils.copyProperties(userEntity, userDto);</span>
+<span class="fc" id="L139">            returnValue.add(userDto);</span>
+<span class="fc" id="L140">        }</span>
+
+<span class="fc" id="L142">        return returnValue;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

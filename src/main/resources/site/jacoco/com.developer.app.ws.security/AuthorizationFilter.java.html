@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthorizationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.mobile-app-ws</a> &gt; <a href="index.source.html" class="el_package">com.developer.app.ws.security</a> &gt; <span class="el_source">AuthorizationFilter.java</span></div><h1>AuthorizationFilter.java</h1><pre class="source lang-java linenums">package com.developer.app.ws.security;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Base64;
+
+public class AuthorizationFilter extends BasicAuthenticationFilter {
+
+    public AuthorizationFilter(AuthenticationManager authManager) {
+<span class="fc" id="L25">        super(authManager);</span>
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * Processes an HTTP request to perform additional filtering based on security headers.
+     * This method intercepts the request to check for the presence of a specific security header.
+     * If the header is missing or does not start with a predefined token prefix, the filter chain is
+     * allowed to proceed without interruption. If the header is present and correctly formatted,
+     * the method attempts to authenticate the user based on the header's content.
+     *
+     * @param request  The {@link HttpServletRequest} object that contains the request the client made to the servlet.
+     * @param response The {@link HttpServletResponse} object that contains the response the servlet returns to the client.
+     * @param chain    The {@link FilterChain} for invoking the next filter or the resource at the end of the chain.
+     * @throws IOException      If an input or output exception occurs while the servlet is handling the HTTP request.
+     * @throws ServletException If the request could not be handled.
+     *
+     *                          &lt;p&gt;Firstly, the method retrieves the security header from the request. If this header is either absent
+     *                          or does not begin with the expected token prefix (as defined in {@code SecurityConstants.HEADER_STRING}
+     *                          and {@code SecurityConstants.TOKEN_PREFIX}), the filter chain is allowed to continue to the next element
+     *                          in the chain or the requested resource, effectively bypassing any specific security checks implemented
+     *                          in this method.&lt;/p&gt;
+     *
+     *                          &lt;p&gt;If the security header is present and correctly prefixed, the method proceeds to authenticate the user.
+     *                          This is done by calling {@code getAuthentication(HttpServletRequest)}, a method presumably designed to parse
+     *                          the header and validate the credentials contained within. Upon successful authentication, the authenticated
+     *                          {@link UsernamePasswordAuthenticationToken} is set in the {@link SecurityContextHolder}, ensuring that the
+     *                          user's security context is correctly established for subsequent security checks in the application.&lt;/p&gt;
+     *
+     *                          &lt;p&gt;Finally, regardless of the authentication outcome, the filter chain is allowed to proceed, ensuring that
+     *                          the request continues through any additional filters and ultimately to the requested resource, albeit with
+     *                          the user's authentication status appropriately updated based on the presence and validity of the security header.&lt;/p&gt;
+     */
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+<span class="nc" id="L61">        String header = request.getHeader(SecurityConstants.HEADER_STRING);</span>
+
+<span class="nc bnc" id="L63" title="All 4 branches missed.">        if (header == null || !header.startsWith(SecurityConstants.TOKEN_PREFIX)) {</span>
+<span class="nc" id="L64">            chain.doFilter(request, response);</span>
+<span class="nc" id="L65">            return;</span>
+        }
+
+<span class="nc" id="L68">        UsernamePasswordAuthenticationToken authentication = getAuthentication(request);</span>
+<span class="nc" id="L69">        SecurityContextHolder.getContext().setAuthentication(authentication);</span>
+<span class="nc" id="L70">        chain.doFilter(request, response);</span>
+
+<span class="nc" id="L72">    }</span>
+
+    /**
+     * Attempts to authenticate a user based on the JWT token found in the HTTP request's authorization header.
+     * This method extracts the token from the authorization header, decodes and verifies it to extract the subject
+     * (typically the username), and then constructs an {@link UsernamePasswordAuthenticationToken} with the subject
+     * and an empty list of authorities, indicating that the user is authenticated but without any specific roles.
+     *
+     * @param request The {@link HttpServletRequest} from which the authorization header is extracted.
+     * @return An {@link UsernamePasswordAuthenticationToken} representing the authenticated user, or {@code null}
+     * if the token is invalid, expired, or not present in the request.
+     *
+     * &lt;p&gt;The method first attempts to retrieve the authorization header from the incoming request using the
+     * header name specified by {@code SecurityConstants.HEADER_STRING}. If this header is not found, the method
+     * immediately returns {@code null}, indicating that authentication could not be performed due to the absence
+     * of the token.&lt;/p&gt;
+     *
+     * &lt;p&gt;If the authorization header is present, the method then strips the prefix defined by
+     * {@code SecurityConstants.TOKEN_PREFIX} from the token, assuming the token is prefixed as such to denote its type.
+     * Following this, the method decodes the secret key, specified by {@code SecurityConstants.getTokenSecret()},
+     * using Base64 encoding and uses it to create a {@link SecretKey} instance compatible with the HS512 signature
+     * algorithm.&lt;/p&gt;
+     *
+     * &lt;p&gt;With the secret key, the method creates a {@link JwtParser} to verify and parse the token. If the token is
+     * successfully parsed, it extracts the claims payload to retrieve the subject of the token, which represents the
+     * username of the authenticated user. If the subject is not present in the claims, indicating an invalid or malformed
+     * token, the method returns {@code null}.&lt;/p&gt;
+     *
+     * &lt;p&gt;Assuming a valid subject is found, the method constructs and returns a new
+     * {@link UsernamePasswordAuthenticationToken} with the subject as the principal, {@code null} credentials, and an
+     * empty list of granted authorities. This token can then be used by the security context to represent the current
+     * user's authentication state.&lt;/p&gt;
+     */
+
+    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
+
+<span class="nc" id="L108">        String authorizationHeader = request.getHeader(SecurityConstants.HEADER_STRING);</span>
+
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (authorizationHeader == null) {</span>
+<span class="nc" id="L111">            return null;</span>
+        }
+
+<span class="nc" id="L114">        String token = authorizationHeader.replace(SecurityConstants.TOKEN_PREFIX, &quot;&quot;);</span>
+<span class="nc" id="L115">        byte[] secretKeyBytes = Base64.getEncoder().encode(SecurityConstants.getTokenSecret().getBytes());</span>
+<span class="nc" id="L116">        SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());</span>
+
+<span class="nc" id="L118">        JwtParser parser = Jwts.parser()</span>
+<span class="nc" id="L119">                .verifyWith(secretKey)</span>
+<span class="nc" id="L120">                .build();</span>
+
+<span class="nc" id="L122">        Claims claims = parser.parseSignedClaims(token).getPayload();</span>
+<span class="nc" id="L123">        String subject = claims.getSubject();</span>
+
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (subject == null) {</span>
+<span class="nc" id="L126">            return null;</span>
+        }
+
+<span class="nc" id="L129">        return new UsernamePasswordAuthenticationToken(subject, null, new ArrayList&lt;&gt;());</span>
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

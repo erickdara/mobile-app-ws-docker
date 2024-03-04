@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
             user.getAddresses().set(i, address);
         }
 
-        //BeanUtils.copyProperties(user, userEntity);
+
         ModelMapper modelMapper = new ModelMapper();
         UserEntity userEntity = modelMapper.map(user, UserEntity.class);
 
@@ -58,10 +58,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity storedUserDetails = userRepository.save(userEntity);
 
-        //BeanUtils.copyProperties(storedUserDetails, returnValue);
-        UserDto returnValue = modelMapper.map(storedUserDetails, UserDto.class);
-
-        return returnValue;
+        return modelMapper.map(storedUserDetails, UserDto.class);
     }
 
 
@@ -90,7 +87,7 @@ public class UserServiceImpl implements UserService {
         UserDto returnValue = new UserDto();
         UserEntity userEntity = userRepository.findByUserId(userId);
 
-        if (userEntity == null) throw new UsernameNotFoundException(userId);
+        if (userEntity == null) throw new UsernameNotFoundException("User with ID: " + userId + " not found");
 
         BeanUtils.copyProperties(userEntity, returnValue);
         return returnValue;
@@ -119,7 +116,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findByUserId(userId);
 
         if (userEntity == null)
-            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+            throw new UsernameNotFoundException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
 
         userRepository.delete(userEntity);
     }

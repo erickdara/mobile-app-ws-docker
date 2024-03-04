@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.mobile-app-ws</a> &gt; <a href="index.source.html" class="el_package">com.developer.app.ws.ui.controller</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.developer.app.ws.ui.controller;
+
+import com.developer.app.ws.service.AddressesService;
+import com.developer.app.ws.service.UserService;
+import com.developer.app.ws.shared.dto.AddressDTO;
+import com.developer.app.ws.shared.dto.UserDto;
+import com.developer.app.ws.ui.model.request.UserDetailsRequestModel;
+import com.developer.app.ws.ui.model.response.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+@SecurityScheme(name = &quot;Bearer Authentication&quot;, type = SecuritySchemeType.HTTP, bearerFormat = &quot;JWT&quot;, scheme = &quot;bearer&quot;)
+@Tag(name = &quot;User&quot;, description = &quot;Rest API that manage the user personal information registration for app mobile&quot;)
+@RestController
+@RequestMapping(&quot;users&quot;)  //http://localhost:8080/users
+<span class="fc" id="L39">public class UserController {</span>
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    AddressesService addressesService;
+
+    @Operation(summary = &quot;Get user information by id&quot;, description = &quot;Get detailed information about the specified user id&quot;, security = {
+            @SecurityRequirement(name = &quot;Bearer Authentication&quot;)}, method = &quot;GET&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Successful operation&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = UserRest.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = UserRest.class))}),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Invalid ID supplied&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Unauthorized&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Forbidden&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Invalid input&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+    })
+    @GetMapping(path = &quot;/{id}&quot;, produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public UserRest getUser(@PathVariable String id) {
+
+<span class="fc" id="L59">        ModelMapper modelMapper = new ModelMapper();</span>
+        UserRest returnValue;
+
+<span class="fc" id="L62">        UserDto userDto = userService.getUserByUserId(id);</span>
+<span class="fc" id="L63">        returnValue = modelMapper.map(userDto, UserRest.class);</span>
+
+<span class="fc" id="L65">        return returnValue;</span>
+    }
+
+    @Operation(summary = &quot;Create User&quot;, description = &quot;Allows the creation of new user&quot;, security = {
+            @SecurityRequirement(name = &quot;Bearer Authentication&quot;)}, method = &quot;POST&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Successful operation&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = UserRest.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = UserRest.class))}),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Unauthorized&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Forbidden&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;409&quot;, description = &quot;Conflict&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+    })
+    @PostMapping(consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE},
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) throws Exception {
+        UserRest returnValue;
+
+<span class="fc" id="L81">        ModelMapper modelMapper = new ModelMapper();</span>
+<span class="fc" id="L82">        UserDto userDto = modelMapper.map(userDetails, UserDto.class);</span>
+
+<span class="fc" id="L84">        UserDto createdUser = userService.createUser(userDto);</span>
+<span class="fc" id="L85">        returnValue = modelMapper.map(createdUser, UserRest.class);</span>
+
+<span class="fc" id="L87">        return returnValue;</span>
+    }
+
+    @Operation(summary = &quot;Update user information registered&quot;, description = &quot;Allow the updating of the information of specified user by ID&quot;, security = {
+            @SecurityRequirement(name = &quot;Bearer Authentication&quot;)}, method = &quot;PUT&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Successful operation&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = UserRest.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = UserRest.class))}),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Unauthorized&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Forbidden&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+    })
+    @PutMapping(path = &quot;/{id}&quot;,
+            consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE},
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public UserRest updateUser(@PathVariable String id, @RequestBody UserDetailsRequestModel userDetails) {
+<span class="fc" id="L101">        UserRest returnValue = new UserRest();</span>
+
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        if (userDetails.getFirstName().isEmpty()) throw new NullPointerException(&quot;The object is null&quot;);</span>
+
+<span class="fc" id="L105">        ModelMapper modelMapper = new ModelMapper();</span>
+<span class="fc" id="L106">        UserDto userDto = new UserDto();</span>
+<span class="fc" id="L107">        modelMapper.map(userDetails, userDto);</span>
+
+<span class="fc" id="L109">        UserDto createdUser = userService.updateUser(id, userDto);</span>
+<span class="fc" id="L110">        modelMapper.map(createdUser, returnValue);</span>
+
+<span class="fc" id="L112">        return returnValue;</span>
+    }
+
+    @Operation(summary = &quot;Delete a user by id&quot;, description = &quot;Delete a user specified by ID&quot;, security = {
+            @SecurityRequirement(name = &quot;Bearer Authentication&quot;)}, method = &quot;DELETE&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Successful operation&quot;),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Invalid user value&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Unauthorized&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Forbidden&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+    })
+    @DeleteMapping(path = &quot;/{id}&quot;,
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public OperationStatusModel deleteUser(
+            @Parameter(description = &quot;User id to delete&quot;, required = true) @PathVariable String id) {
+<span class="fc" id="L127">        OperationStatusModel returnValue = new OperationStatusModel();</span>
+<span class="fc" id="L128">        returnValue.setOperationName(RequestOperationName.DELETE.name());</span>
+
+<span class="fc" id="L130">        userService.deleteUser(id);</span>
+
+<span class="fc" id="L132">        returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());</span>
+<span class="fc" id="L133">        return returnValue;</span>
+    }
+
+    @Operation(summary = &quot;Get all list users&quot;, description = &quot;Get all Users&quot;, security = {
+            @SecurityRequirement(name = &quot;Bearer Authentication&quot;)}, method = &quot;GET&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;successful operation&quot;, content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserRest.class)))),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Invalid ID supplied&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Unauthorized&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Forbidden&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Invalid input&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+    })
+    @GetMapping(produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public List&lt;UserRest&gt; getUsers(@RequestParam(value = &quot;page&quot;, defaultValue = &quot;0&quot;) int page,
+                                   @RequestParam(value = &quot;limit&quot;, defaultValue = &quot;2&quot;) int limit) {
+
+<span class="fc" id="L149">        List&lt;UserRest&gt; returnValue = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L151">        List&lt;UserDto&gt; users = userService.getUsers(page, limit);</span>
+
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        for (UserDto userDto : users) {</span>
+<span class="fc" id="L154">            UserRest userModel = new UserRest();</span>
+<span class="fc" id="L155">            BeanUtils.copyProperties(userDto, userModel);</span>
+<span class="fc" id="L156">            returnValue.add(userModel);</span>
+<span class="fc" id="L157">        }</span>
+
+<span class="fc" id="L159">        return returnValue;</span>
+    }
+
+    @Operation(summary = &quot;Get a list of addresses by user&quot;, description = &quot;Get detailed list of addresses specified an ID of the user&quot;, security = {
+            @SecurityRequirement(name = &quot;Bearer Authentication&quot;)}, method = &quot;GET&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Successful operation&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = UserRest.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = UserRest.class))}),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Invalid ID supplied&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Unauthorized&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Forbidden&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Invalid input&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+    })
+    @GetMapping(path = &quot;/{id}/addresses&quot;,
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public List&lt;AddressesRest&gt; getUserAddresses(@PathVariable String id) {
+
+<span class="fc" id="L175">        List&lt;AddressesRest&gt; returnValue = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L177">        List&lt;AddressDTO&gt; addressesDto = addressesService.getAddresses(id);</span>
+
+<span class="pc bpc" id="L179" title="2 of 4 branches missed.">        if (addressesDto != null &amp;&amp; !addressesDto.isEmpty()) {</span>
+<span class="fc" id="L180">            Type listType = new TypeToken&lt;List&lt;AddressesRest&gt;&gt;() {</span>
+<span class="fc" id="L181">            }.getType();</span>
+<span class="fc" id="L182">            returnValue = new ModelMapper().map(addressesDto, listType);</span>
+        }
+
+<span class="fc" id="L185">        return returnValue;</span>
+    }
+
+    @Operation(summary = &quot;Get user address by id&quot;, description = &quot;Get detailed address data specified user ID and address ID&quot;, security = {
+            @SecurityRequirement(name = &quot;Bearer Authentication&quot;)}, method = &quot;GET&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Successful operation&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = UserRest.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = UserRest.class))}),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Invalid ID supplied&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;401&quot;, description = &quot;Unauthorized&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;Forbidden&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Invalid input&quot;, content = {@Content(mediaType = &quot;application/xml&quot;, schema = @Schema(implementation = ErrorMessage.class)), @Content(mediaType = &quot;application/json&quot;, schema = @Schema(implementation = ErrorMessage.class))}),
+    })
+    @GetMapping(path = &quot;/{userId}/addresses/{addressId}&quot;,
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public EntityModel&lt;AddressesRest&gt; getUserAddress(@PathVariable String userId, @PathVariable String addressId) {
+<span class="fc" id="L200">        AddressDTO addressDto = addressesService.getAddress(addressId);</span>
+
+<span class="fc" id="L202">        ModelMapper modelMapper = new ModelMapper();</span>
+<span class="fc" id="L203">        AddressesRest returnValue = modelMapper.map(addressDto, AddressesRest.class);</span>
+
+        // http://localhost:8080/users/&lt;userId&gt;
+<span class="fc" id="L206">        Link userLink = WebMvcLinkBuilder.linkTo(UserController.class).slash(userId).withRel(&quot;user&quot;);</span>
+        // http://localhost:8080/users/&lt;userId&gt;/addresses
+<span class="fc" id="L208">        Link userAddressesLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UserController.class).getUserAddresses(userId))</span>
+//                .slash(userId)
+//                .slash(&quot;addresses&quot;)
+<span class="fc" id="L211">                .withRel(&quot;addresses&quot;);</span>
+        // http://localhost:8080/users/&lt;userId&gt;/{addressId}
+<span class="fc" id="L213">        Link selfLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UserController.class)</span>
+<span class="fc" id="L214">                        .getUserAddress(userId, addressId))</span>
+<span class="fc" id="L215">                .withSelfRel();</span>
+
+//                .slash(userId)
+//                .slash(&quot;addresses&quot;)
+//                .slash(addressId)
+//
+//        returnValue.add(userLink);
+//        returnValue.add(userAddressesLink);
+//        returnValue.add(selfLink);
+
+<span class="fc" id="L225">        return EntityModel.of(returnValue, Arrays.asList(userLink, userAddressesLink, selfLink));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

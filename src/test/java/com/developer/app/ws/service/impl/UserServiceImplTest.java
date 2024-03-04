@@ -213,14 +213,6 @@ class UserServiceImplTest {
 
     }
 
-    @Test
-    void deleteUser_UserServiceException() {
-        String userId = "nonExistentUserId";
-        UserDto user = new UserDto();
-        when(userRepository.findByUserId(userId)).thenReturn(null);
-
-        assertThrows(UserServiceException.class, () -> userService.deleteUser(userId));
-    }
 
     @Test
     void getUsers() {

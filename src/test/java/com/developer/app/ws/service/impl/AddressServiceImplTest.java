@@ -60,27 +60,20 @@ class AddressServiceImplTest {
         when(userRepository.findByUserId(userId)).thenReturn(userEntity);
         when(addressRepository.findAllByUserDetails(userEntity)).thenReturn(addressEntities);
 
-        // Act
         List<AddressDTO> addresses = addressService.getAddresses(userId);
 
-        // Assert
-        assertThat(addresses).hasSize(2); // Assuming 2 address entities
-        // ... further assertions to verify content
+        assertThat(addresses).hasSize(2);
     }
 
     @Test
     void getAddress() {
-        // Arrange
         String addressId = "validAddressId";
         AddressEntity expectedEntity = new AddressEntity();
         when(addressRepository.findByAddressId(addressId)).thenReturn(expectedEntity);
 
-        // Act
         AddressDTO actualAddress = addressService.getAddress(addressId);
 
-        // Assert
         assertNotNull(actualAddress);
-        // ... assertions to verify mapped properties
     }
 
     private List<AddressDTO> getAddressDto() {

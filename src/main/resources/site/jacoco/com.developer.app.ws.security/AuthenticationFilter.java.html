@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.mobile-app-ws</a> &gt; <a href="index.source.html" class="el_package">com.developer.app.ws.security</a> &gt; <span class="el_source">AuthenticationFilter.java</span></div><h1>AuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.developer.app.ws.security;
+
+import com.developer.app.ws.SpringApplicationContext;
+import com.developer.app.ws.service.UserService;
+import com.developer.app.ws.shared.dto.UserDto;
+import com.developer.app.ws.ui.model.request.UserLoginRequestModel;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
+
+public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
+    public AuthenticationFilter(AuthenticationManager authenticationManager) {
+<span class="fc" id="L32">        super(authenticationManager);</span>
+<span class="fc" id="L33">    }</span>
+
+    /**
+     * Attempts to authenticate a user based on the provided HTTP request.
+     * This method overrides the standard Spring Security authentication method
+     * to process the user's login credentials from the request.
+     *
+     * @param req The HTTP request containing the user's login credentials.
+     * @param res The HTTP response. In this method implementation, it is not directly used.
+     * @return An {@link Authentication} object representing the authenticated user.
+     * @throws AuthenticationException If authentication fails due to invalid credentials or other authentication issues.
+     * @throws RuntimeException        If there is an I/O error while processing the request (e.g., malformed JSON in request body).
+     */
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)
+            throws AuthenticationException {
+        try {
+            // Parse the user's login credentials from the request body.
+<span class="fc" id="L51">            UserLoginRequestModel creds = new ObjectMapper().readValue(req.getInputStream(), UserLoginRequestModel.class);</span>
+
+            // Create an authentication token with the parsed credentials.
+<span class="fc" id="L54">            return getAuthenticationManager().authenticate(</span>
+<span class="fc" id="L55">                    new UsernamePasswordAuthenticationToken(creds.getEmail(), creds.getPassword(), new ArrayList&lt;&gt;()));</span>
+
+<span class="nc" id="L57">        } catch (IOException e) {</span>
+            // Handle I/O errors by throwing a runtime exception.
+<span class="nc" id="L59">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    /**
+     * Handles successful authentication by generating a JWT (JSON Web Token) for the authenticated user.
+     * This method is called by the Spring Security framework when a user has been successfully authenticated.
+     * It creates a JWT token and sets it in the response header along with the user's unique identifier.
+     * &lt;p&gt;
+     * The JWT is signed using the HS512 algorithm and a secret key derived from the application's security constants.
+     * It contains the username as the subject and includes both issued-at and expiration timestamps.
+     * &lt;p&gt;
+     * Additionally, this method retrieves user details from the application's user service and adds the user's
+     * unique ID to the response header.
+     *
+     * @param req   The HttpServletRequest object that contains the request the client made to the server.
+     * @param res   The HttpServletResponse object that contains the response the server sends to the client.
+     * @param chain The FilterChain that allows the request to proceed to the next filter in the chain.
+     * @param auth  The Authentication object that contains details about the successfully authenticated user.
+     * @throws IOException      If an input or output exception occurs during the process.
+     * @throws ServletException If a servlet-specific error occurs during the process.
+     */
+    @Override
+    protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain,
+                                            Authentication auth) throws IOException, ServletException {
+
+<span class="nc" id="L85">        byte[] secretKeyBytes = Base64.getEncoder().encode(SecurityConstants.getTokenSecret().getBytes());</span>
+<span class="nc" id="L86">        SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());</span>
+<span class="nc" id="L87">        Instant now = Instant.now();</span>
+
+<span class="nc" id="L89">        String userName = ((User) auth.getPrincipal()).getUsername();</span>
+<span class="nc" id="L90">        String token = Jwts.builder().subject(userName).expiration(</span>
+<span class="nc" id="L91">                Date.from(now.plusMillis(SecurityConstants.EXPIRATION_TIME))).issuedAt(Date.from(now)).signWith(secretKey, SignatureAlgorithm.HS512).compact();</span>
+
+<span class="nc" id="L93">        UserService userService = (UserService) SpringApplicationContext.getBean(&quot;userServiceImpl&quot;);</span>
+<span class="nc" id="L94">        UserDto userDto = userService.getUser(userName);</span>
+
+<span class="nc" id="L96">        res.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);</span>
+<span class="nc" id="L97">        res.addHeader(&quot;UserId&quot;, userDto.getUserId());</span>
+<span class="nc" id="L98">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

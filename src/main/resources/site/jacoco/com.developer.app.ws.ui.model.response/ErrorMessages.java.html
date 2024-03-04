@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ErrorMessages.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.mobile-app-ws</a> &gt; <a href="index.source.html" class="el_package">com.developer.app.ws.ui.model.response</a> &gt; <span class="el_source">ErrorMessages.java</span></div><h1>ErrorMessages.java</h1><pre class="source lang-java linenums">package com.developer.app.ws.ui.model.response;
+
+import lombok.Getter;
+
+<span class="fc" id="L5">@Getter</span>
+public enum ErrorMessages {
+
+<span class="fc" id="L8">    MISSING_REQUIRED_FIELD(&quot;Missing required field. Please check documentation for required fields&quot;),</span>
+<span class="fc" id="L9">    RECORD_ALREADY_EXISTS(&quot;Record already exists&quot;),</span>
+<span class="fc" id="L10">    INTERNAL_SERVER_ERROR(&quot;Internal server error&quot;),</span>
+<span class="fc" id="L11">    NO_RECORD_FOUND(&quot;Record with provided id is not found&quot;),</span>
+<span class="fc" id="L12">    AUTHENTICATION_FAILED(&quot;Authetication failed&quot;),</span>
+<span class="fc" id="L13">    COULD_NOT_UPDATE_RECORD(&quot;Could not update record&quot;),</span>
+<span class="fc" id="L14">    COULD_NOT_DELETE_RECORD(&quot;Could not delete record&quot;),</span>
+<span class="fc" id="L15">    EMAIL_ADDRESS_NOT_VERIFIED(&quot;Email address could not be verified&quot;);</span>
+
+    /**
+     * -- GETTER --
+     *
+     * @return the errorMessage
+     */
+<span class="fc" id="L22">    private String errorMessage;</span>
+
+<span class="fc" id="L24">    ErrorMessages(String errorMessage) {</span>
+<span class="fc" id="L25">        this.errorMessage = errorMessage;</span>
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * @param errorMessage the errorMessage to set
+     */
+    public void setErrorMessage(String errorMessage) {
+<span class="nc" id="L32">        this.errorMessage = errorMessage;</span>
+<span class="nc" id="L33">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

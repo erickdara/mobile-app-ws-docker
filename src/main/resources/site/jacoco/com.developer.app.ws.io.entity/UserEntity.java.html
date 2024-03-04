@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserEntity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.mobile-app-ws</a> &gt; <a href="index.source.html" class="el_package">com.developer.app.ws.io.entity</a> &gt; <span class="el_source">UserEntity.java</span></div><h1>UserEntity.java</h1><pre class="source lang-java linenums">package com.developer.app.ws.io.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.List;
+
+@Entity(name = &quot;users&quot;)
+@Getter
+<span class="fc" id="L13">@Setter</span>
+<span class="fc" id="L14">public class UserEntity implements Serializable {</span>
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue
+<span class="nc" id="L21">    private long id;</span>
+
+    @Column(nullable = false)
+<span class="fc" id="L24">    private String userId;</span>
+
+    @Column(nullable = false, length = 50)
+<span class="fc" id="L27">    private String firstName;</span>
+
+    @Column(nullable = false, length = 50)
+<span class="fc" id="L30">    private String lastName;</span>
+
+    @Column(nullable = false, length = 120, unique = true)
+<span class="fc" id="L33">    private String email;</span>
+
+    @Column(nullable = false)
+<span class="fc" id="L36">    private String encryptedPassword;</span>
+<span class="fc" id="L37">    private String emailVerificationToken;</span>
+
+    @Column(nullable = true, columnDefinition = &quot;boolean default false&quot;)
+<span class="fc" id="L40">    private Boolean emailVerificationStatus;</span>
+
+    @OneToMany(mappedBy = &quot;userDetails&quot;, cascade = CascadeType.ALL)
+<span class="fc" id="L43">    private List&lt;AddressEntity&gt; addresses;</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
